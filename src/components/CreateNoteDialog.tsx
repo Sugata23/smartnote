@@ -1,14 +1,45 @@
 "use client"
 import React from 'react'
+import axios from 'axios'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Loader2, Plus } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query';
 
 type Props = {}
 
 const CreateNoteDialog = (props: Props) => {
     const [input, setInput] = React.useState("");
+    const createNotebook = useMutation({
+        mutationFn: async () => {
+            const response = await axios.post("/api/createNoteBook", {
+                name: input,
+            });
+            return response.data;
+        },
+    });
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (input === "") {
+            window.alert("Please enter a name for your notebook");
+            return;
+        }
+        createNotebook.mutate(undefined, {
+            onSuccess: () => {
+                console.log("created new note:",
+                    //{ note_id }
+                );
+                // hit another endpoint to uplod the temp dalle url to permanent firebase url
+                //uploadToFirebase.mutate(note_id);
+                //router.push(`/notebook/${note_id}`);
+            },
+            onError: (error) => {
+                console.error(error);
+                window.alert("Failed to create new notebook");
+            },
+        });
+    };
     return (
         <Dialog>
             <DialogTrigger>
@@ -26,8 +57,8 @@ const CreateNoteDialog = (props: Props) => {
                         You can create a new note by clicking the below button.
                     </DialogDescription>
                 </DialogHeader>
-                <form 
-                //onSubmit={handleSubmit}
+                <form
+                    onSubmit={handleSubmit}
                 >
                     <Input
                         value={input}
@@ -42,7 +73,7 @@ const CreateNoteDialog = (props: Props) => {
                         <Button
                             type="submit"
                             className="bg-green-600"
-                            //disabled={createNotebook.isLoading}
+                        //disabled={createNotebook.isLoading}
                         >
                             {/* {createNotebook.isLoading && (
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
