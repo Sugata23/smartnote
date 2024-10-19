@@ -6,10 +6,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Loader2, Plus } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 type Props = {}
 
 const CreateNoteDialog = (props: Props) => {
+    const router = useRouter();
     const [input, setInput] = React.useState("");
     const createNotebook = useMutation({
         mutationFn: async () => {
@@ -26,13 +28,12 @@ const CreateNoteDialog = (props: Props) => {
             return;
         }
         createNotebook.mutate(undefined, {
-            onSuccess: () => {
-                console.log("created new note:",
-                    //{ note_id }
+            onSuccess: ({ note_id }) => {
+                console.log("created new note:",{ note_id }
                 );
                 // hit another endpoint to uplod the temp dalle url to permanent firebase url
                 //uploadToFirebase.mutate(note_id);
-                //router.push(`/notebook/${note_id}`);
+                router.push(`/notebook/${note_id}`);
             },
             onError: (error) => {
                 console.error(error);
@@ -58,7 +59,7 @@ const CreateNoteDialog = (props: Props) => {
                     </DialogDescription>
                 </DialogHeader>
                 <form
-                    onSubmit={handleSubmit}
+                onSubmit={handleSubmit}
                 >
                     <Input
                         value={input}
@@ -73,11 +74,11 @@ const CreateNoteDialog = (props: Props) => {
                         <Button
                             type="submit"
                             className="bg-green-600"
-                        //disabled={createNotebook.isLoading}
+                            disabled={createNotebook.isPending}
                         >
-                            {/* {createNotebook.isLoading && (
+                            {createNotebook.isPending && (
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            )} */}
+                            )} 
                             Create
                         </Button>
                     </div>
